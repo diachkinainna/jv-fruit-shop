@@ -19,10 +19,6 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public void process(List<FruitTransaction> fruitTransactions) {
-        if (fruitTransactions.isEmpty()) {
-            throw new IllegalArgumentException("List of transactions must not be empty");
-        }
-
         fruitTransactions.stream()
                 .collect(Collectors.groupingBy(FruitTransaction::getFruitName))
                 .entrySet()

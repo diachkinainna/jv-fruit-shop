@@ -42,7 +42,7 @@ public class DataConverterImpl implements DataConverter {
             int quantity = Integer.parseInt(transactionParts[QUANTITY_INDEX]);
 
             if (quantity < 0) {
-                throw new RuntimeException("quantity can't be less than zero");
+                throw new RuntimeException("quantity cannot be less than zero");
             }
 
             fruitTransaction.setQuantity(quantity);

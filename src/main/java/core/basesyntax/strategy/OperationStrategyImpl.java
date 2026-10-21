@@ -13,6 +13,10 @@ public class OperationStrategyImpl implements OperationStrategy {
 
     @Override
     public OperationHandler getOperationHandler(FruitTransaction.Operation operation) {
+        if (!operationHandlers.containsKey(operation)) {
+            throw new RuntimeException("Unknown operation " + operation.toString());
+        }
+        
         return operationHandlers.get(operation);
     }
 }
