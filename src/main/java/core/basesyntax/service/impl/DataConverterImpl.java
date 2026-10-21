@@ -10,17 +10,14 @@ public class DataConverterImpl implements DataConverter {
     private static final int CODE_INDEX = 0;
     private static final int FRUIT_NAME_INDEX = 1;
     private static final int QUANTITY_INDEX = 2;
-    private static final int HEADER_ROW_INDEX = 0;
+    private static final int HEADER_INDEX = 0;
     private static final String DELIMITER = ",";
+
 
     @Override
     public List<FruitTransaction> convertToTransactions(List<String> transactions) {
-        if (transactions.isEmpty()) {
-            throw new IllegalArgumentException("Transaction data is empty");
-        }
-
         return transactions.stream()
-                .skip(HEADER_ROW_INDEX)
+                .skip(HEADER_INDEX)
                 .map(this::parse)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
