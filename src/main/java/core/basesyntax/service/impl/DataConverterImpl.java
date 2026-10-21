@@ -3,50 +3,52 @@ package core.basesyntax.service.impl;
 import core.basesyntax.model.FruitTransaction;
 import core.basesyntax.service.DataConverter;
 import java.util.List;
-import java.util.Optional;
 
 public class DataConverterImpl implements DataConverter {
     private static final int TRANSACTION_PARTS_LENGTH = 3;
     private static final int CODE_INDEX = 0;
     private static final int FRUIT_NAME_INDEX = 1;
     private static final int QUANTITY_INDEX = 2;
-    private static final int HEADER_INDEX = 0;
+    private static final int HEADER_INDEX = 1;
     private static final String DELIMITER = ",";
-
 
     @Override
     public List<FruitTransaction> convertToTransactions(List<String> transactions) {
+        if (transactions.isEmpty()) {
+            return List.of();
+        }
+
         return transactions.stream()
                 .skip(HEADER_INDEX)
                 .map(this::parse)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
                 .toList();
     }
 
-    private Optional<FruitTransaction> parse(String transaction) {
+    private FruitTransaction parse(String transaction) {
         String[] transactionParts = transaction.split(DELIMITER);
 
         if (transactionParts.length != TRANSACTION_PARTS_LENGTH) {
-            return Optional.empty();
+            throw new RuntimeException("Invalid input data");
         }
+
+        FruitTransaction fruitTransaction = new FruitTransaction();
+        fruitTransaction.setFruitName(transactionParts[FRUIT_NAME_INDEX].trim());
+        int quantity;
 
         try {
-            FruitTransaction fruitTransaction = new FruitTransaction();
-            fruitTransaction.setOperation(FruitTransaction.Operation.fromCode(
-                    transactionParts[CODE_INDEX]));
-            fruitTransaction.setFruitName(transactionParts[FRUIT_NAME_INDEX]);
-            int quantity = Integer.parseInt(transactionParts[QUANTITY_INDEX]);
-
-            if (quantity < 0) {
-                throw new RuntimeException("quantity cannot be less than zero");
-            }
-
-            fruitTransaction.setQuantity(quantity);
-            return Optional.of(fruitTransaction);
-
-        } catch (IllegalArgumentException e) {
-            return Optional.empty();
+            quantity = Integer.parseInt(transactionParts[QUANTITY_INDEX].trim());
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("wrong quantity", e);
         }
+        fruitTransaction.setQuantity(quantity);
+
+        try {
+            fruitTransaction.setOperation(FruitTransaction.Operation.fromCode(
+                    transactionParts[CODE_INDEX].trim()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Unknown code" + transactionParts[CODE_INDEX].trim(), e);
+        }
+
+        return fruitTransaction;
     }
 }
