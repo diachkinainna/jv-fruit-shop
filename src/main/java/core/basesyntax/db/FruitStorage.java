@@ -10,7 +10,7 @@ public class FruitStorage {
     private final List<Fruit> fruits = new ArrayList<>();
 
     public List<Fruit> getFruits() {
-        return fruits;
+        return List.copyOf(fruits);
     }
 
     public void add(Fruit fruit) {

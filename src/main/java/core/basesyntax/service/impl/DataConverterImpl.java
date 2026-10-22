@@ -9,7 +9,7 @@ public class DataConverterImpl implements DataConverter {
     private static final int CODE_INDEX = 0;
     private static final int FRUIT_NAME_INDEX = 1;
     private static final int QUANTITY_INDEX = 2;
-    private static final int HEADER_INDEX = 1;
+    private static final int HEADER_LINE_SKIP = 1;
     private static final String DELIMITER = ",";
 
     @Override
@@ -19,7 +19,7 @@ public class DataConverterImpl implements DataConverter {
         }
 
         return transactions.stream()
-                .skip(HEADER_INDEX)
+                .skip(HEADER_LINE_SKIP)
                 .map(this::parse)
                 .toList();
     }
@@ -38,7 +38,11 @@ public class DataConverterImpl implements DataConverter {
         try {
             quantity = Integer.parseInt(transactionParts[QUANTITY_INDEX].trim());
         } catch (NumberFormatException e) {
-            throw new RuntimeException("wrong quantity", e);
+            throw new RuntimeException("Invalid number format", e);
+        }
+
+        if (quantity < 0) {
+            throw new RuntimeException("Quantity must be greater than or equal to zero");
         }
         fruitTransaction.setQuantity(quantity);
 

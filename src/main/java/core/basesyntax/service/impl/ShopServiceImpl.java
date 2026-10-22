@@ -1,12 +1,12 @@
 package core.basesyntax.service.impl;
 
 import core.basesyntax.db.FruitStorage;
+import core.basesyntax.model.Fruit;
 import core.basesyntax.model.FruitTransaction;
 import core.basesyntax.service.ShopService;
 import core.basesyntax.strategy.OperationStrategy;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class ShopServiceImpl implements ShopService {
     private final OperationStrategy operationStrategy;
@@ -19,25 +19,19 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public void process(List<FruitTransaction> fruitTransactions) {
-        fruitTransactions.stream()
-                .collect(Collectors.groupingBy(FruitTransaction::getFruitName))
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> calculateBalance(e.getValue())))
-                .forEach(fruitStorage::update);
-    }
-
-    private Integer calculateBalance(List<FruitTransaction> fruitTransactions) {
-        int balance = 0;
         for (FruitTransaction fruitTransaction: fruitTransactions) {
-            balance = operationStrategy.getOperationHandler(fruitTransaction.getOperation())
-                   .updateQuantity(balance, fruitTransaction.getQuantity());
-        }
+            Optional<Fruit> optionalFruit = fruitStorage.get(fruitTransaction.getFruitName());
 
-        if (balance < 0) {
-            throw new RuntimeException("Balance cannot be negative");
-        }
+            int storageQuantity = optionalFruit.isPresent() ? optionalFruit.get().getQuantity() : 0;
 
-        return balance;
+            int newQuantity = operationStrategy.getOperationHandler(fruitTransaction.getOperation())
+                    .updateQuantity(storageQuantity, fruitTransaction.getQuantity());
+
+            if (newQuantity < 0) {
+                throw new RuntimeException("Balance cannot be negative");
+            }
+
+            fruitStorage.update(fruitTransaction.getFruitName(), newQuantity);
+        }
     }
 }
